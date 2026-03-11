@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roulette - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="common.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1>🎰 Luck-based Coincidences Casino 🎲</h1>
+      <div class="balance">Balance: $<span id="balance">350</span></div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Roulette</h2>
+    <label>Bet: $<input type="number" id="bet-input" value="10" min="1"></label><br>
+    <label>Type:
+      <select id="bet-type">
+        <option value="number">Straight Number</option>
+        <option value="color">Color</option>
+      </select>
+    </label>
+    <div id="number-input-container">
+      <label>Number (0-36): <input type="number" id="bet-number" min="0" max="36" value="0"></label>
+    </div>
+    <div id="color-input-container" style="display:none;">
+      <label>Color:
+        <select id="bet-color">
+          <option value="red">Red</option>
+          <option value="black">Black</option>
+          <option value="green">Green</option>
+        </select>
+      </label>
+    </div>
+    <div class="roulette" id="roulette">
+      <div class="roulette-pointer"></div>
+    </div>
+    <button id="spin-roulette" class="poker-controls">Spin Roulette</button>
+    <p id="roulette-result"></p>
+  </main>
+  <script>
+    // toggle input fields based on bet type
+    document.getElementById('bet-type').addEventListener('change', (e) => {
+      const t = e.target.value;
+      document.getElementById('number-input-container').style.display = t === 'number' ? '' : 'none';
+      document.getElementById('color-input-container').style.display = t === 'color' ? '' : 'none';
+    });
+
+    document.getElementById('spin-roulette').addEventListener('click', () => {
+      const bet = parseInt(document.getElementById('bet-input').value, 10) || 0;
+      if(bet <= 0) return;
+      const type = document.getElementById('bet-type').value;
+      const luck = casinoUtils.getLuckBonus();
+      window.casinoUtils.updateBalance(-bet);
+
+      // pick number and color
+      const number = Math.floor(Math.random() * 37); // 0..36
+      const color = number === 0 ? 'green' : (number % 2 === 0 ? 'black' : 'red');
+
+      // spin animation
+      const anglePerSlot = 360 / 37;
+      const degrees = number * anglePerSlot;
+      const wheel = document.getElementById('roulette');
+      wheel.style.transition = 'transform 3s ease-out';
+      wheel.style.transform = `rotate(${degrees + 720}deg)`;
+
+      setTimeout(() => {
+        let resultMsg = `Number ${number} (${color})`;
+        let payout = 0;
+
+        if (type === 'number') {
+          const chosen = parseInt(document.getElementById('bet-number').value, 10);
+          if (chosen === number) {
+            payout = casinoUtils.getPayoutAmount(bet, 35);
+            window.casinoUtils.recordWin(payout);
+          } else {
+            window.casinoUtils.recordLoss(bet);
+          }
+        } else {
+          const chosenColor = document.getElementById('bet-color').value;
+          if (chosenColor === color) {
+            const odds = color === 'green' ? 35 : 2;
+            payout = casinoUtils.getPayoutAmount(bet, odds);
+            window.casinoUtils.recordWin(payout);
+          } else {
+            window.casinoUtils.recordLoss(bet);
+          }
+        }
+
+        if (payout) window.casinoUtils.updateBalance(payout);
+        document.getElementById('roulette-result').textContent = resultMsg;
+      }, 3100);
+    });
+  </script>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+</body>
+</html>

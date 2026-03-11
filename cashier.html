@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cashier - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="common.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1>🎰 Luck-based Coincidences Casino 🎲</h1>
+      <div class="balance">Balance: $<span id="balance">350</span></div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="slots.html">Slots</a></li>
+        <li><a href="poker.html">Poker</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Cashier</h2>
+    <p>1 chip = $1. Choose a denomination to buy:</p>
+    <button onclick="casinoUtils.updateBalance(1)">Buy $1 Chips</button>
+    <button onclick="casinoUtils.updateBalance(50)">Buy $50 Chips</button>
+    <button onclick="casinoUtils.updateBalance(100)">Buy $100 Chips</button>
+    <button onclick="casinoUtils.updateBalance(500)">Buy $500 Chips</button>
+    <hr>
+    <button onclick="alert('cash out not implemented')">Cash Out</button>
+  </main>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+</body>
+</html>

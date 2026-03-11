@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="common.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1>🎰 Luck-based Coincidences Casino 🎲</h1>
+      <div class="balance">Balance: $<span id="balance">350</span></div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="slots.html">Slots</a></li>
+        <li><a href="poker.html">Poker</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Player Profile</h2>
+    <p>Balance: $<span id="profile-balance">0</span></p>
+    <div id="stats-container">
+      <p>Money Made: $<span id="stat-money-made">0</span></p>
+      <p>Money Lost: $<span id="stat-money-lost">0</span></p>
+      <p>Upgrades Purchased: <span id="stat-upgrades">0</span></p>
+      <p>Achievements: <span id="stat-achievements">0</span></p>
+      <p>Luck Level: <span id="stat-luck">0</span></p>
+      <p>Consecutive Wins: <span id="stat-consec">0</span></p>
+      <p>Win Rate: <span id="stat-win-rate">0%</span></p>
+      <p>Loss Rate: <span id="stat-loss-rate">0%</span></p>
+    </div>
+    <!-- demo controls -->
+    <div class="demo-controls">
+      <button onclick="gameStats.recordGameResult(true, 100)">Simulate Win +$100</button>
+      <button onclick="gameStats.recordGameResult(false, 50)">Simulate Loss $50</button>
+      <button onclick="gameStats.addUpgrade()">Simulate Upgrade</button>
+      <button onclick="gameStats.addAchievement()">Simulate Achievement</button>
+    </div>
+  </main>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+  <script>
+    // use persisted stats from casinoUtils
+    function renderStats() {
+      const s = casinoUtils.getStats();
+      document.getElementById('stat-money-made').textContent = s.moneyMade;
+      document.getElementById('stat-money-lost').textContent = s.moneyLost;
+      document.getElementById('stat-upgrades').textContent = s.upgradesPurchased;
+      document.getElementById('stat-achievements').textContent = s.achievements;
+      document.getElementById('stat-luck').textContent = casinoUtils.getLuckBonus();
+      document.getElementById('stat-consec').textContent = s.consecutiveWins || 0;
+      document.getElementById('stat-win-rate').textContent = casinoUtils.getWinRate() + '%';
+      document.getElementById('stat-loss-rate').textContent = casinoUtils.getLossRate() + '%';
+      document.getElementById('profile-balance').textContent = casinoUtils.getBalance();
+    }
+    // expose stats helpers for games and demo
+    window.addEventListener('DOMContentLoaded', renderStats);
+
+    window.gameStats = {
+      recordGameResult(win, amount) {
+        if(win) casinoUtils.recordWin(amount);
+        else casinoUtils.recordLoss(amount);
+        renderStats();
+      },
+      addUpgrade() { casinoUtils.purchaseUpgradeStat(); renderStats(); },
+      addAchievement() { casinoUtils.unlockAchievementStat(); renderStats(); }
+    };
+  </script>
+</body>
+</html>

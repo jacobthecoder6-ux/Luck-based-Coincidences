@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Craps - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="common.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1>🎰 Luck-based Coincidences Casino 🎲</h1>
+      <div class="balance">Balance: $<span id="balance">350</span></div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Craps</h2>
+    <label>Bet: $<input type="number" id="bet-input" value="10" min="1"></label>
+    <div id="dice-container">
+      <span id="die1" class="reel">🎲</span>
+      <span id="die2" class="reel">🎲</span>
+    </div>
+    <button id="roll-dice" class="poker-controls">Roll Dice</button>
+    <p id="craps-result"></p>
+  </main>
+  <script>
+    document.getElementById('roll-dice').addEventListener('click', () => {
+      const bet = parseInt(document.getElementById('bet-input').value, 10) || 0;
+      if(bet<=0) return;
+      window.casinoUtils.updateBalance(-bet);
+      // animate dice
+      ['die1','die2'].forEach(id=>{
+        const d = document.getElementById(id);
+        d.classList.add('animate');
+        setTimeout(()=>d.classList.remove('animate'),500);
+      });
+      setTimeout(()=>{
+        const d1 = Math.ceil(Math.random()*6);
+        const d2 = Math.ceil(Math.random()*6);
+        document.getElementById('die1').textContent = d1;
+        document.getElementById('die2').textContent = d2;
+        const sum = d1 + d2;
+        document.getElementById('craps-result').textContent = 'You rolled ' + sum;
+        let payout = 0;
+        const luck = casinoUtils.getLuckBonus();
+      if (sum===7 || sum===11) {
+        payout = casinoUtils.getPayoutAmount(bet, 2); // even money
+        window.casinoUtils.recordWin(payout);
+      } else if (sum===2 || sum===3 || sum===12) {
+        // natural loss
+        // maybe luck chance to escape
+        if(Math.random() < luck*0.01) {
+          payout = casinoUtils.getPayoutAmount(bet, 2);
+          window.casinoUtils.recordWin(payout);
+        } else {
+          window.casinoUtils.recordLoss(bet);
+        }
+      } else {
+        // point established: roll until point or 7
+        let point = sum;
+        let roll;
+        do {
+          roll = Math.ceil(Math.random()*6) + Math.ceil(Math.random()*6);
+        } while(roll !== point && roll !== 7);
+        if(roll === point) {
+          payout = casinoUtils.getPayoutAmount(bet, 2);
+          window.casinoUtils.recordWin(payout);
+        } else {
+          // potential luck rescue
+          if(Math.random() < luck*0.01) {
+            payout = casinoUtils.getPayoutAmount(bet, 2);
+            window.casinoUtils.recordWin(payout);
+          } else {
+            window.casinoUtils.recordLoss(bet);
+          }
+        }
+      }
+      if(payout) window.casinoUtils.updateBalance(payout);
+    });
+  </script>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+</body>
+</html>

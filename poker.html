@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poker - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1>🎰 Luck-based Coincidences Casino 🎲</h1>
+      <div class="balance">Balance: $<span id="balance">350</span></div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="slots.html">Slots</a></li>
+        <li><a href="poker.html">Poker</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Poker</h2>
+    <div class="poker-table">
+      <div class="bet-area" id="bet-area">
+        <span>Bet:</span> <span id="bet-amount">0</span>
+      </div>
+    </div>
+    <div id="chips-display"></div>
+    <div class="poker-controls">
+      <button onclick="placeBet(1)">$1</button>
+      <button onclick="placeBet(50)">$50</button>
+      <button onclick="placeBet(100)">$100</button>
+      <button onclick="placeBet(500)">$500</button>
+      <button onclick="resolveRound()">Deal</button>
+    </div>
+    <p id="poker-message"></p>
+  </main>
+  <script>
+    let currentBet = 0;
+    // simple card deck for poker high card
+    function createDeck(){
+      const d=[];
+      ['♠','♥','♦','♣'].forEach(suit=>{
+        ['2','3','4','5','6','7','8','9','10','J','Q','K','A'].forEach(val=>{
+          d.push(val + suit);
+        });
+      });
+      return d;
+    }
+    let deck = createDeck();
+    function drawCard(){
+      if(deck.length === 0) deck = createDeck();
+      return deck.splice(Math.floor(Math.random()*deck.length),1)[0];
+    }
+    function placeBet(amount) {
+      currentBet += amount;
+      document.getElementById('bet-amount').textContent = currentBet;
+      // add visual chip
+      const chip = document.createElement('div');
+      chip.className = 'chip chip-' + amount;
+      chip.textContent = amount;
+      document.getElementById('chips-display').appendChild(chip);
+      chip.classList.add('drop');
+      setTimeout(()=>chip.classList.remove('drop'),300);
+    }
+    function resolveRound() {
+      if(currentBet===0){ alert('Place a bet first'); return; }
+      window.casinoUtils.updateBalance(-currentBet);
+      // deal two cards each
+      if(deck.length < 4) deck = createDeck();
+      const playerCards = [drawCard(), drawCard()];
+      const dealerCards = [drawCard(), drawCard()];
+      // compare high card
+      const rankOrder = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
+      function highCard(cards){
+        return Math.max(...cards.map(c=>rankOrder[c.slice(0,-1)]));
+      }
+      const playerHigh = highCard(playerCards);
+      const dealerHigh = highCard(dealerCards);
+      let win=false;
+      if(playerHigh>dealerHigh) win=true;
+      else if(playerHigh<dealerHigh) win=false;
+      else win = Math.random()<0.5; // tie break
+      if(win) {
+        document.getElementById('poker-message').textContent = 'You won!';
+        const payout = casinoUtils.getPayoutAmount(currentBet, 2);
+        window.casinoUtils.updateBalance(payout);
+        window.casinoUtils.recordWin(payout);
+      } else {
+        document.getElementById('poker-message').textContent = 'You lost.';
+        window.casinoUtils.recordLoss(currentBet);
+      }
+      currentBet = 0;
+      document.getElementById('bet-amount').textContent = 0;
+      document.getElementById('chips-display').innerHTML = '';
+    }
+  </script>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+</body>
+</html>

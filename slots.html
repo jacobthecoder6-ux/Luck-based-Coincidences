@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Slots - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="common.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1>🎰 Luck-based Coincidences Casino 🎲</h1>
+      <div class="balance">Balance: $<span id="balance">350</span></div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="slots.html">Slots</a></li>
+        <li><a href="poker.html">Poker</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Slots</h2>
+    <label>Bet: $<input type="number" id="bet-input" value="10" min="1"></label>
+    <div class="slot-machine" id="slot-machine">
+      <div class="reel" id="reel1">7</div>
+      <div class="reel" id="reel2">7</div>
+      <div class="reel" id="reel3">7</div>
+    </div>
+    <button id="spin-btn" class="poker-controls">Spin</button>
+    <p id="jackpot-message"></p>
+  </main>
+  <script>
+    // weighted symbol distribution: cherries common, 7 rare
+    const symbols = ['🍒','🍒','🍒','🍒','🍋','🍋','🍋','🔔','🔔','⭐','⭐','7'];
+    document.getElementById('spin-btn').addEventListener('click', () => {
+      const bet = parseInt(document.getElementById('bet-input').value, 10) || 0;
+      if (bet <= 0) return;
+      window.casinoUtils.updateBalance(-bet);
+      // animate reels
+      ['reel1','reel2','reel3'].forEach(id=>{
+        const r = document.getElementById(id);
+        r.classList.add('spin');
+        setTimeout(()=>r.classList.remove('spin'),600);
+      });
+      setTimeout(()=>{
+        const r1 = symbols[Math.floor(Math.random()*symbols.length)];
+        const r2 = symbols[Math.floor(Math.random()*symbols.length)];
+        const r3 = symbols[Math.floor(Math.random()*symbols.length)];
+        document.getElementById('reel1').textContent = r1;
+        document.getElementById('reel2').textContent = r2;
+        document.getElementById('reel3').textContent = r3;
+        let message = '';
+        let payout = 0;
+        if (r1===r2 && r2===r3) {
+          message = 'Jackpot! You win!';
+          payout = casinoUtils.getPayoutAmount(bet, 50); // realistic payout multipliers
+          window.casinoUtils.recordWin(payout);
+        } else {
+          // maybe small match payouts?
+          if(r1===r2 || r2===r3 || r1===r3) {
+            payout = casinoUtils.getPayoutAmount(bet, 2);
+            message = 'Small win!';
+            window.casinoUtils.recordWin(payout);
+          } else {
+            message = 'You lose.';
+            window.casinoUtils.recordLoss(bet);
+          }
+        }
+        if (payout) window.casinoUtils.updateBalance(payout);
+        document.getElementById('jackpot-message').textContent = message;
+      }, 600);
+    });
+  </script>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+</body>
+</html>

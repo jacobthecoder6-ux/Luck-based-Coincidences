@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blackjack - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="common.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1>🎰 Luck-based Coincidences Casino 🎲</h1>
+      <div class="balance">Balance: $<span id="balance">350</span></div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Blackjack</h2>
+    <label>Bet: $<input type="number" id="bet-input" value="10" min="1"></label>
+    <div id="blackjack-table">
+      <div>Dealer: <span id="dealer-cards"></span></div>
+      <div>Player: <span id="player-cards"></span></div>
+    </div>
+    <button id="deal-btn" class="poker-controls">Deal</button>
+    <p id="blackjack-result"></p>
+  </main>
+  <script>
+    function createDeck(){
+      const d = [];
+      ['♠','♥','♦','♣'].forEach(suit=>{
+        ['A',2,3,4,5,6,7,8,9,10,'J','Q','K'].forEach(val=>{
+          d.push(val + suit);
+        });
+      });
+      return d;
+    }
+    let deck = createDeck();
+    function drawCard(){
+      if(deck.length === 0) deck = createDeck();
+      return deck.splice(Math.floor(Math.random()*deck.length),1)[0];
+    }
+    document.getElementById('deal-btn').addEventListener('click', ()=>{
+      const bet = parseInt(document.getElementById('bet-input').value, 10) || 0;
+      if(bet<=0) return;
+      window.casinoUtils.updateBalance(-bet);
+      // ensure deck has enough cards
+      if(deck.length < 10) deck = createDeck();
+      const player = [drawCard(), drawCard()];
+      const dealer = [drawCard(), drawCard()];
+      const playerHtml = player.map(c=>'<span class="card'+(c.includes('♥')||c.includes('♦')?' red':'')+'">'+c+'</span>').join(' ');
+      const dealerHtml = dealer.map(c=>'<span class="card'+(c.includes('♥')||c.includes('♦')?' red':'')+'">'+c+'</span>').join(' ');
+      document.getElementById('player-cards').innerHTML = playerHtml;
+      document.getElementById('dealer-cards').innerHTML = dealerHtml;
+      // animate cards
+      document.querySelectorAll('#player-cards .card, #dealer-cards .card').forEach(c=>{
+        c.classList.add('dealt');
+        setTimeout(()=>c.classList.remove('dealt'),300);
+      });
+      function score(hand) {
+        let total = 0;
+        let aces = 0;
+        hand.forEach(card => {
+          const value = card.slice(0,-1);
+          if(['J','Q','K'].includes(value)) total += 10;
+          else if(value==='A') { aces++; total += 11; }
+          else total += parseInt(value,10);
+        });
+        while(total>21 && aces>0) { total -= 10; aces--; }
+        return total;
+      }
+      const playerScore = score(player);
+      const dealerScore = score(dealer);
+      let win = false;
+      if(playerScore>21) win = false;
+      else if(dealerScore>21) win = true;
+      else if(playerScore > dealerScore) win = true;
+      else if(playerScore < dealerScore) win = false;
+      else {
+        const luck = casinoUtils.getLuckBonus();
+        win = Math.random() < (0.5 + luck*0.01);
+      }
+      document.getElementById('blackjack-result').textContent = win ? 'Player wins ('+playerScore+' vs '+dealerScore+')' : 'Dealer wins ('+dealerScore+' vs '+playerScore+')';
+      if(win) {
+        const payout = casinoUtils.getPayoutAmount(bet, 1.5); // 3:2 payout
+        window.casinoUtils.updateBalance(payout);
+        window.casinoUtils.recordWin(payout);
+      } else {
+        window.casinoUtils.recordLoss(bet);
+      }
+    });
+  </script>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+</body>
+</html>

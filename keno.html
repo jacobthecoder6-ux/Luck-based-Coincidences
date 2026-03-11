@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keno - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="common.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1>🎰 Luck-based Coincidences Casino 🎲</h1>
+      <div class="balance">Balance: $<span id="balance">350</span></div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Keno</h2>
+    <p>Pick a number between 1 and 20. Four numbers are drawn; match any to win 4:1.</p>
+    <label>Bet: $<input type="number" id="bet-input" value="10" min="1"></label><br>
+    <label>Number: <input type="number" id="pick-number" value="1" min="1" max="20"></label><br>
+    <button id="play-keno" class="poker-controls">Play Keno</button>
+    <p id="keno-result"></p>
+  </main>
+  <script>
+    document.getElementById('play-keno').addEventListener('click', ()=>{
+      const bet = parseInt(document.getElementById('bet-input').value, 10) || 0;
+      const pick = parseInt(document.getElementById('pick-number').value, 10);
+      if(bet <= 0 || pick < 1 || pick > 20) return;
+      window.casinoUtils.updateBalance(-bet);
+      // draw 4 unique numbers
+      const draws = [];
+      while(draws.length < 4) {
+        const n = Math.ceil(Math.random()*20);
+        if(!draws.includes(n)) draws.push(n);
+      }
+      const hit = draws.includes(pick);
+      document.getElementById('keno-result').textContent = 'Draws: ' + draws.join(', ') + (hit ? ' - you hit!' : '');
+      if(hit) {
+        const payout = casinoUtils.getPayoutAmount(bet, 4);
+        window.casinoUtils.updateBalance(payout);
+        window.casinoUtils.recordWin(payout);
+      } else {
+        window.casinoUtils.recordLoss(bet);
+      }
+    });
+  </script>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+</body>
+</html>

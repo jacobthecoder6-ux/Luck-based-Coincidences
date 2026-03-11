@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attributes - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="common.js" defer></script>
+</head>
+<body>
+  <header>
+    <h1>Player Attributes</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <p>This page displays player attributes and lets you buy upgrades.</p>
+    <div id="attributes-list">
+      <div>
+        <p>Luck level: <span id="luck-level">0</span></p>
+        <p>Next upgrade cost: $<span id="luck-cost">0</span></p>
+        <button id="buy-luck">Buy Luck (+1)</button>
+      </div>
+      <hr>
+      <div>
+        <p>Charisma level: <span id="charisma-level">0</span></p>
+        <p>Next upgrade cost: $<span id="charisma-cost">0</span></p>
+        <button id="buy-charisma">Buy Charisma (+1)</button>
+      </div>
+      <hr>
+      <div>
+        <p>Strategy level: <span id="strategy-level">0</span></p>
+        <p>Next upgrade cost: $<span id="strategy-cost">0</span></p>
+        <button id="buy-strategy">Buy Strategy (+1)</button>
+      </div>
+    </div>
+    <p id="attr-msg"></p>
+  </main>
+  <script>
+    function refreshAttrs() {
+      const attrs = casinoUtils.getAttributes();
+      const luck = attrs.luck || 0;
+      const charisma = attrs.charisma || 0;
+      const strategy = attrs.strategy || 0;
+      document.getElementById('luck-level').textContent = luck;
+      document.getElementById('charisma-level').textContent = charisma;
+      document.getElementById('strategy-level').textContent = strategy;
+
+      const luckCost = casinoUtils.getLuckCost();
+      document.getElementById('luck-cost').textContent = luckCost === null ? 'N/A (maxed)' : luckCost;
+      document.getElementById('buy-luck').disabled = luckCost === null;
+
+      const cCost = casinoUtils.getAttributeCost('charisma');
+      document.getElementById('charisma-cost').textContent = cCost === null ? 'N/A (maxed)' : cCost;
+      document.getElementById('buy-charisma').disabled = cCost === null;
+
+      const sCost = casinoUtils.getAttributeCost('strategy');
+      document.getElementById('strategy-cost').textContent = sCost === null ? 'N/A (maxed)' : sCost;
+      document.getElementById('buy-strategy').disabled = sCost === null;
+    }
+
+    document.getElementById('buy-luck').addEventListener('click', ()=>{
+      const success = casinoUtils.purchaseLuck();
+      if(success) {
+        document.getElementById('attr-msg').textContent = 'Luck upgraded!';
+        refreshAttrs();
+      } else {
+        document.getElementById('attr-msg').textContent = 'Cannot purchase (insufficient funds or max level reached).';
+      }
+    });
+
+    document.getElementById('buy-charisma').addEventListener('click', ()=>{
+      const cost = casinoUtils.getAttributeCost('charisma');
+      if(cost === null) { document.getElementById('attr-msg').textContent = 'Charisma maxed.'; return; }
+      const ok = casinoUtils.purchaseAttribute('charisma', cost);
+      document.getElementById('attr-msg').textContent = ok ? 'Charisma upgraded!' : 'Not enough balance or maxed.';
+      refreshAttrs();
+    });
+
+    document.getElementById('buy-strategy').addEventListener('click', ()=>{
+      const cost = casinoUtils.getAttributeCost('strategy');
+      if(cost === null) { document.getElementById('attr-msg').textContent = 'Strategy maxed.'; return; }
+      const ok = casinoUtils.purchaseAttribute('strategy', cost);
+      document.getElementById('attr-msg').textContent = ok ? 'Strategy upgraded!' : 'Not enough balance or maxed.';
+      refreshAttrs();
+    });
+
+    document.addEventListener('DOMContentLoaded', refreshAttrs);
+  </script>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+</body>
+</html>

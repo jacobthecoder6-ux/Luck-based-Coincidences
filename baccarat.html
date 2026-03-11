@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Baccarat - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="common.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1>🎰 Luck-based Coincidences Casino 🎲</h1>
+      <div class="balance">Balance: $<span id="balance">350</span></div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Baccarat</h2>
+    <label>Bet: $<input type="number" id="bet-input" value="10" min="1"></label>
+    <p>Choose banker or player.</p>
+    <div class="poker-controls">
+      <button onclick="playBaccarat('banker')">Bet Banker</button>
+      <button onclick="playBaccarat('player')">Bet Player</button>
+    </div>
+    <p id="baccarat-result"></p>
+  </main>
+  <script>
+    function playBaccarat(side) {
+      const bet = parseInt(document.getElementById('bet-input').value, 10) || 0;
+      if(bet<=0) return;
+      window.casinoUtils.updateBalance(-bet);
+      const luck = casinoUtils.getLuckBonus();
+      const win = Math.random() < (0.46 + luck*0.005); // banker win base plus luck
+      document.getElementById('baccarat-result').textContent = win ? side + ' wins!' : side + ' loses.';
+      if(win) {
+        const payout = casinoUtils.getPayoutAmount(bet, 1.95); // 0.95:1 payout
+        window.casinoUtils.updateBalance(payout);
+        window.casinoUtils.recordWin(payout);
+      } else {
+        window.casinoUtils.recordLoss(bet);
+      }
+    }
+  </script>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+</body>
+</html>

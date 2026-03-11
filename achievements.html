@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Achievements - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="common.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1>🎰 Luck-based Coincidences Casino 🎲</h1>
+      <div class="balance">Balance: $<span id="balance">350</span></div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="achievements.html">Achievements</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Achievements</h2>
+    <p>Track your unlocked badges and progress.</p>
+    <div id="achievements-list">
+      <p>Loading achievements...</p>
+    </div>
+    <div class="demo-controls">
+      <button id="simulate-win">Simulate 10-win Streak</button>
+      <button id="simulate-upgrade">Simulate Upgrade</button>
+    </div>
+  </main>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+  <script>
+    const ACHIEVEMENTS = [
+      { id: 'hot-streak', name: 'Hot Streak', desc: 'Win 10 consecutive games' },
+      { id: 'first-upgrade', name: 'First Upgrade', desc: 'Purchase your first attribute upgrade' },
+      { id: 'big-winner', name: 'Big Winner', desc: 'Win a payout ≥ $1000' }
+    ];
+
+    function renderAchievements() {
+      const stats = casinoUtils.getStats();
+      const unlocked = stats.unlocked || {};
+      const container = document.getElementById('achievements-list');
+      container.innerHTML = '';
+      ACHIEVEMENTS.forEach(a => {
+        // check conditions in case achievements were unlocked by gameplay but haven't been marked
+        let isUnlocked = !!unlocked[a.id];
+        if(!isUnlocked) {
+          if (a.id === 'hot-streak') isUnlocked = (stats.consecutiveWins || 0) >= 10;
+          if (a.id === 'first-upgrade') isUnlocked = (stats.upgradesPurchased || 0) >= 1;
+          if (a.id === 'big-winner') isUnlocked = (stats.moneyMade || 0) >= 1000;
+          if(isUnlocked) casinoUtils.unlockAchievement && casinoUtils.unlockAchievement(a.id);
+        }
+        const el = document.createElement('div');
+        el.className = 'achievement' + (isUnlocked ? ' unlocked' : '');
+        el.innerHTML = `<strong>${a.name}</strong> — ${a.desc} ${isUnlocked ? '✅' : '❌'}`;
+        container.appendChild(el);
+      });
+    }
+
+    document.getElementById('simulate-win').addEventListener('click', ()=>{
+      // simulate unlocking hot-streak
+      casinoUtils.unlockAchievement && casinoUtils.unlockAchievement('hot-streak');
+      renderAchievements();
+    });
+
+    document.getElementById('simulate-upgrade').addEventListener('click', ()=>{
+      // simulate first upgrade
+      casinoUtils.unlockAchievement && casinoUtils.unlockAchievement('first-upgrade');
+      renderAchievements();
+    });
+
+    window.addEventListener('DOMContentLoaded', renderAchievements);
+  </script>
+</body>
+</html>

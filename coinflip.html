@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coin Flip - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="common.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1>🎰 Luck-based Coincidences Casino 🎲</h1>
+      <div class="balance">Balance: $<span id="balance">350</span></div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Coin Flip</h2>
+    <label>Bet: $<input type="number" id="bet-input" value="10" min="1"></label><br>
+    <label>Side:
+      <select id="bet-side">
+        <option value="heads">Heads</option>
+        <option value="tails">Tails</option>
+      </select>
+    </label>
+    <div id="coin" class="coin" style="font-size:5rem; text-align:center; margin:20px;">🪙</div>
+    <button id="flip-btn" class="poker-controls">Flip Coin</button>
+    <p id="coin-result"></p>
+  </main>
+  <script>
+    document.getElementById('flip-btn').addEventListener('click', ()=>{
+      const bet = parseInt(document.getElementById('bet-input').value, 10) || 0;
+      if(bet <= 0) return;
+      const side = document.getElementById('bet-side').value;
+      window.casinoUtils.updateBalance(-bet);
+      const coinEl = document.getElementById('coin');
+      coinEl.classList.add('flip');
+      setTimeout(()=>coinEl.classList.remove('flip'), 600);
+
+      setTimeout(()=>{
+        const result = Math.random() < 0.5 ? 'heads' : 'tails';
+        const win = result === side;
+        document.getElementById('coin-result').textContent = 'Result: ' + result;
+        if(win) {
+          const payout = casinoUtils.getPayoutAmount(bet, 2);
+          window.casinoUtils.updateBalance(payout);
+          window.casinoUtils.recordWin(payout);
+        } else {
+          window.casinoUtils.recordLoss(bet);
+        }
+      }, 600);
+    });
+  </script>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+</body>
+</html>

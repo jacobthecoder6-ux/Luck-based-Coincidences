@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Video Poker - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="common.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1>🎰 Luck-based Coincidences Casino 🎲</h1>
+      <div class="balance">Balance: $<span id="balance">350</span></div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="achievements.html">Achievements</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Video Poker (Draw)</h2>
+    <label>Bet: $<input type="number" id="bet-input" value="5" min="1"></label>
+    <div id="vp-table" class="poker-table" style="padding-top:20px; text-align:center;">
+      <div id="cards" style="display:flex; justify-content:center; gap:10px;"></div>
+      <div style="margin-top:12px;"><button id="deal-btn">Deal</button> <button id="draw-btn" disabled>Draw</button></div>
+      <p id="vp-result"></p>
+    </div>
+  </main>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+  <script>
+    // Simple five-card draw video poker
+    function createDeck(){
+      const d=[];
+      ['♠','♥','♦','♣'].forEach(suit=>{
+        ['2','3','4','5','6','7','8','9','10','J','Q','K','A'].forEach(val=>{
+          d.push({code: val + suit, val: val, suit: suit});
+        });
+      });
+      return d;
+    }
+    let deck = [];
+    let hand = [];
+    let held = [false,false,false,false,false];
+
+    function shuffleIfNeeded() { if(deck.length < 15) deck = createDeck(); }
+
+    function renderHand() {
+      const container = document.getElementById('cards');
+      container.innerHTML = '';
+      hand.forEach((c,i)=>{
+        const el = document.createElement('div');
+        el.className = 'card' + ((c.code.includes('♥')||c.code.includes('♦')) ? ' red' : '');
+        el.style.cursor = 'pointer';
+        el.textContent = c.code;
+        if(held[i]) el.style.outline = '3px solid #00ff66';
+        el.addEventListener('click', ()=>{ held[i]=!held[i]; renderHand(); });
+        container.appendChild(el);
+      });
+    }
+
+    function drawInitial() {
+      shuffleIfNeeded();
+      hand = [];
+      for(let i=0;i<5;i++) hand.push(deck.splice(Math.floor(Math.random()*deck.length),1)[0]);
+      held = [false,false,false,false,false];
+      renderHand();
+      // small deal animation
+      document.querySelectorAll('#cards .card').forEach((c,idx)=>{
+        c.classList.add('dealt');
+        setTimeout(()=>c.classList.remove('dealt'), 500 + idx*80);
+      });
+    }
+
+    function evaluateHand(cards) {
+      // returns {name, multiplier}
+      const vals = cards.map(c=>c.val);
+      const suits = cards.map(c=>c.suit);
+      const rankMap = {'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
+      const counts = {};
+      cards.forEach(c=> counts[c.val] = (counts[c.val]||0)+1);
+      const countsArr = Object.values(counts).sort((a,b)=>b-a);
+      const isFlush = suits.every(s=>s===suits[0]);
+      const sorted = cards.map(c=>rankMap[c.val]).sort((a,b)=>a-b);
+      const isStraight = sorted.every((v,i,arr)=> i===0 || v === arr[i-1]+1) || JSON.stringify(sorted) === JSON.stringify([2,3,4,5,14]);
+
+      if(isStraight && isFlush && sorted[4]===14) return {name:'Royal Flush', mult:250};
+      if(isStraight && isFlush) return {name:'Straight Flush', mult:50};
+      if(countsArr[0]===4) return {name:'Four of a Kind', mult:25};
+      if(countsArr[0]===3 && countsArr[1]===2) return {name:'Full House', mult:9};
+      if(isFlush) return {name:'Flush', mult:6};
+      if(isStraight) return {name:'Straight', mult:4};
+      if(countsArr[0]===3) return {name:'Three of a Kind', mult:3};
+      if(countsArr[0]===2 && countsArr[1]===2) return {name:'Two Pair', mult:2};
+      if(countsArr[0]===2) {
+        // pair: only Jacks or better pays in many variants
+        const pairVal = Object.keys(counts).find(k=>counts[k]===2);
+        const highPair = ['J','Q','K','A'].includes(pairVal);
+        return {name: highPair? 'Pair (Jacks or Better)': 'Low Pair', mult: highPair?1:0};
+      }
+      return {name:'No Win', mult:0};
+    }
+
+    document.getElementById('deal-btn').addEventListener('click', ()=>{
+      const bet = parseInt(document.getElementById('bet-input').value,10) || 0;
+      if(bet<=0) return;
+      window.casinoUtils.updateBalance(-bet);
+      shuffleIfNeeded();
+      drawInitial();
+      document.getElementById('vp-result').textContent = 'Select holds then press Draw.';
+      document.getElementById('draw-btn').disabled = false;
+    });
+
+    document.getElementById('draw-btn').addEventListener('click', ()=>{
+      const bet = parseInt(document.getElementById('bet-input').value,10) || 0;
+      // replace non-held cards
+      for(let i=0;i<5;i++){
+        if(!held[i]) hand[i] = deck.splice(Math.floor(Math.random()*deck.length),1)[0];
+      }
+      renderHand();
+      const result = evaluateHand(hand);
+      if(result.mult > 0) {
+        const payout = casinoUtils.getPayoutAmount(bet, result.mult);
+        document.getElementById('vp-result').textContent = `${result.name} — You win $${payout}`;
+        window.casinoUtils.updateBalance(payout);
+        window.casinoUtils.recordWin(payout);
+      } else {
+        document.getElementById('vp-result').textContent = 'No winning hand.';
+        window.casinoUtils.recordLoss(bet);
+      }
+      document.getElementById('draw-btn').disabled = true;
+    });
+
+    window.addEventListener('DOMContentLoaded', ()=>{
+      deck = createDeck();
+      // shuffle deck a bit
+      deck.sort(()=>Math.random()-0.5);
+    });
+  </script>
+</body>
+</html>

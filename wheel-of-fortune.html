@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wheel of Fortune - Luck-based Coincidences</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="common.js" defer></script>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <h1>🎰 Luck-based Coincidences Casino 🎲</h1>
+      <div class="balance">Balance: $<span id="balance">350</span></div>
+    </div>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="games.html">Games</a></li>
+        <li><a href="attributes.html">Attributes</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="achievements.html">Achievements</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <h2>Wheel of Fortune</h2>
+    <p>Bet and spin the wheel. Land on a segment to win the segment multiplier.</p>
+    <label>Bet: $<input type="number" id="bet-input" value="10" min="1"></label>
+    <div class="wheel-wrapper">
+      <div id="fortune-wheel" class="fortune-wheel"></div>
+      <div class="wheel-pointer">▼</div>
+    </div>
+    <button id="spin-wheel" class="poker-controls">Spin Wheel</button>
+    <p id="wheel-result"></p>
+  </main>
+  <footer>
+    <p>&copy; 2026 Chill Guys IV. All rights reserved.</p>
+  </footer>
+  <script>
+    // segments: label and multiplier
+    const SEGMENTS = [
+      {label: '2x', mult: 2, color:'#cc0000'},
+      {label: '3x', mult: 3, color:'#000'},
+      {label: '5x', mult: 5, color:'#cc0000'},
+      {label: '10x', mult: 10, color:'#000'},
+      {label: '20x', mult: 20, color:'#cc0000'},
+      {label: '50x', mult: 50, color:'#000'},
+      {label: '2x', mult: 2, color:'#cc0000'},
+      {label: '3x', mult: 3, color:'#000'}
+    ];
+
+    function buildWheel() {
+      const wheel = document.getElementById('fortune-wheel');
+      const angle = 360 / SEGMENTS.length;
+      // create a conic-gradient background
+      const stops = SEGMENTS.map((s,i)=>`${s.color} ${i*angle}deg ${(i+1)*angle}deg`).join(', ');
+      wheel.style.background = `conic-gradient(${stops})`;
+      // overlay labels
+      wheel.innerHTML = '';
+      SEGMENTS.forEach((s,i)=>{
+        const seg = document.createElement('div');
+        seg.className = 'segment-label';
+        seg.style.transform = `rotate(${i*angle + angle/2}deg) translateY(-70px)`;
+        seg.textContent = s.label;
+        wheel.appendChild(seg);
+      });
+    }
+
+    function spinToIndex(index) {
+      const wheel = document.getElementById('fortune-wheel');
+      const anglePer = 360 / SEGMENTS.length;
+      // rotate so that target segment lands at pointer (top). We'll rotate many times for effect.
+      const targetAngle = 360 - (index * anglePer + anglePer/2);
+      const spins = 3; // full spins
+      wheel.style.transition = 'transform 4s cubic-bezier(.12,.9,.2,1)';
+      wheel.style.transform = `rotate(${spins*360 + targetAngle}deg)`;
+    }
+
+    document.getElementById('spin-wheel').addEventListener('click', ()=>{
+      const bet = parseInt(document.getElementById('bet-input').value, 10) || 0;
+      if(bet <= 0) return;
+      window.casinoUtils.updateBalance(-bet);
+      const idx = Math.floor(Math.random()*SEGMENTS.length);
+      spinToIndex(idx);
+      document.getElementById('wheel-result').textContent = 'Spinning...';
+      setTimeout(()=>{
+        const seg = SEGMENTS[idx];
+        const payout = casinoUtils.getPayoutAmount(bet, seg.mult);
+        document.getElementById('wheel-result').textContent = `Landed on ${seg.label} — you win $${payout}`;
+        if(payout) {
+          window.casinoUtils.updateBalance(payout);
+          window.casinoUtils.recordWin(payout);
+        } else {
+          window.casinoUtils.recordLoss(bet);
+        }
+      }, 4200);
+    });
+
+    window.addEventListener('DOMContentLoaded', buildWheel);
+  </script>
+</body>
+</html>
