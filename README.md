@@ -21,6 +21,17 @@ A mock online casino built purely for fun. There’s no real money involved—on
 ## Production Ready Notes
 This is a static, self-contained HTML/JS/CSS project with no server dependencies. All state is stored in `localStorage`; simply serve the folder or open files directly. Assets are CSS-generated (no external images), and all animations use CSS keyframes for smooth playback. The code has been refactored for reusability and future extension.
 
+### Deploying
+You can host the repository on any static‑site provider (Render, GitHub Pages, Netlify, etc.).
+- On **Render**, create a *Static Site* and connect the repo.
+- Leave the build command blank (no build necessary).
+- A minimal `package.json` is included so the deploy step won’t error with "couldn't find a package.json".
+- Set the publish directory to `/` (root of repo).
+
+Once deployed, the site serves `index.html` automatically.
+
+Other hosts simply need to point to the repo’s root; no additional configuration required.
+
 ## Credits & Contact
 Built by Chill-Guys-IV. Suggestions welcome via email or GitHub issues.
 

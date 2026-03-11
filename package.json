@@ -1,0 +1,11 @@
+{
+  "name": "luck-based-coincidences",
+  "version": "1.0.0",
+  "description": "Static mock casino site",
+  "main": "index.html",
+  "scripts": {
+    "start": "echo \"This is a static site; no start script required\""
+  },
+  "author": "Chill-Guys-IV",
+  "license": "MIT"
+}
