@@ -4,6 +4,7 @@
   "description": "Static mock casino site",
   "main": "index.html",
   "scripts": {
+    "build": "mkdir -p build && cp *.html *.css *.js build/",
     "start": "echo \"This is a static site; no start script required\""
   },
   "author": "Chill-Guys-IV",
